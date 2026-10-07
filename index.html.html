@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penaaga Wida - Jadwal Pesanan</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+  body { background: #f4f7f6; color: #333; }
+
+  /* LOGIN */
+  #loginPage {
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #2b5876, #4e4376);
+  }
+  .login-box {
+    background: #fff; padding: 40px; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    width: 340px; text-align: center;
+  }
+  .login-box h1 { color: #2b5876; margin-bottom: 5px; font-size: 22px; }
+  .login-box p { color: #888; margin-bottom: 25px; font-size: 13px; }
+  .login-box input {
+    width: 100%; padding: 12px; margin-bottom: 15px;
+    border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+  }
+  .login-box button {
+    width: 100%; padding: 12px; background: #2b5876; color: #fff;
+    border: none; border-radius: 8px; font-size: 15px; cursor: pointer;
+    transition: 0.3s;
+  }
+  .login-box button:hover { background: #4e4376; }
+  #loginError { color: red; font-size: 13px; margin-top: 10px; }
+
+  /* DASHBOARD */
+  #dashboard { display: none; }
+  header {
+    background: linear-gradient(135deg, #2b5876, #4e4376);
+    color: #fff; padding: 18px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+  }
+  header h1 { font-size: 20px; }
+  header button {
+    background: #ff6b6b; color: #fff; border: none;
+    padding: 8px 18px; border-radius: 6px; cursor: pointer;
+  }
+  .container { padding: 25px 30px; max-width: 1200px; margin: auto; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap: 15px; margin-bottom: 25px;
+  }
+  .stat-card {
+    background: #fff; padding: 20px; border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-left: 4px solid #2b5876;
+  }
+  .stat-card h3 { font-size: 26px; color: #2b5876; }
+  .stat-card p { color: #777; font-size: 13px; }
+
+  .section-title { margin: 25px 0 15px; font-size: 18px; color: #2b5876; }
+
+  .order-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+    gap: 20px;
+  }
+  .order-card {
+    background: #fff; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: 0.3s;
+  }
+  .order-card:hover { transform: translateY(-5px); }
+  .order-card img { width: 100%; height: 180px; object-fit: cover; }
+  .order-body { padding: 15px; }
+  .order-body h4 { color: #2b5876; margin-bottom: 5px; }
+  .order-body .layanan {
+    display: inline-block; background: #e8f0f7; color: #2b5876;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 8px;
+  }
+  .order-body p { font-size: 13px; color: #666; margin-bottom: 4px; }
+  .status {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: bold; margin-top: 8px;
+  }
+  .status.selesai { background: #d4f5dd; color: #1e7d3a; }
+  .status.proses { background: #fff3cd; color: #a67c00; }
+  .status.baru { background: #d6e4ff; color: #2b5876; }
+
+  .komentar {
+    margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ddd;
+    font-size: 13px;
+  }
+  .komentar strong { color: #2b5876; }
+  .komentar .bintang { color: #f5b301; }
+
+  @media (max-width: 600px) {
+    .container { padding: 15px; }
+    header h1 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HALAMAN LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h1>🌸 Penaaga Wida</h1>
+    <p>Layanan Pijat & Relaksasi</p>
+    <input type="text" id="username" placeholder="Username" autocomplete="off">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Masuk</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- HALAMAN DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <h1>🌸 Penaaga Wida — Jadwal Pesanan</h1>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <div class="container">
+    <div class="stats">
+      <div class="stat-card"><h3 id="totalOrder">0</h3><p>Total Pesanan</p></div>
+      <div class="stat-card"><h3 id="totalTerapis">0</h3><p>Terapis Aktif</p></div>
+      <div class="stat-card"><h3 id="totalSelesai">0</h3><p>Pesanan Selesai</p></div>
+      <div class="stat-card"><h3 id="totalKomentar">0</h3><p>Komentar Pelanggan</p></div>
+    </div>
+
+    <h2 class="section-title">📋 Jadwal Pesanan Seluruh Terapis</h2>
+    <div class="order-grid" id="orderGrid"></div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA PESANAN ============ */
+const dataPesanan = [
+  {
+    id: 1,
+    nama: "Siti Rahma",
+    layanan: "Pijat Tradisional",
+    terapis: "Wida",
+    tanggal: "12 Mei 2025",
+    jam: "10:00 WIB",
+    durasi: "60 menit",
+    status: "selesai",
+    foto: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600",
+    komentar: [
+      { user: "Siti Rahma", bintang: 5, teks: "Pijatannya sangat nyaman dan rileks!" }
+    ]
+  },
+  {
+    id: 2,
+    nama: "Dewi Lestari",
+    layanan: "Relaksasi Aromaterapi",
+    terapis: "Wida",
+    tanggal: "12 Mei 2025",
+    jam: "13:00 WIB",
+    durasi: "90 menit",
+    status: "proses",
+    foto: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=600",
+    komentar: [
+      { user: "Dewi Lestari", bintang: 4, teks: "Aroma terapi enak, tempat bersih." }
+    ]
+  },
+  {
+    id: 3,
+    nama: "Rina Marlina",
+    layanan: "Pijat Kaki / Refleksi",
+    terapis: "Wida",
+    tanggal: "13 Mei 2025",
+    jam: "09:00 WIB",
+    durasi: "45 menit",
+    status: "baru",
+    foto: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=600",
+    komentar: []
+  },
+  {
+    id: 4,
+    nama: "Andi Saputra",
+    layanan: "Pijat Punggung",
+    terapis: "Wida",
+    tanggal: "13 Mei 2025",
+    jam: "15:30 WIB",
+    durasi: "60 menit",
+    status: "proses",
+    foto: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600",
+    komentar: [
+      { user: "Andi Saputra", bintang: 5, teks: "Punggung pegal hilang, mantap!" }
+    ]
+  },
+  {
+    id: 5,
+    nama: "Maya Anggraini",
+    layanan: "Body Scrub & Massage",
+    terapis: "Wida",
+    tanggal: "14 Mei 2025",
+    jam: "11:00 WIB",
+    durasi: "120 menit",
+    status: "selesai",
+    foto: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600",
+    komentar: [
+      { user: "Maya Anggraini", bintang: 5, teks: "Kulit jadi halus, puas!" },
+      { user: "Maya Anggraini", bintang: 4, teks: "Pelayanan ramah." }
+    ]
+  },
+  {
+    id: 6,
+    nama: "Budi Hartono",
+    layanan: "Pijat Relaksasi",
+    terapis: "Wida",
+    tanggal: "14 Mei 2025",
+    jam: "16:00 WIB",
+    durasi: "60 menit",
+    status: "baru",
+    foto: "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=600",
+    komentar: []
+  }
+];
+
+/* ============ LOGIN ============ */
+function login() {
+  const user = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value.trim();
+  const error = document.getElementById('loginError');
+
+  if (user === 'admin' && pass === 'admin') {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    error.textContent = '';
+    renderDashboard();
+  } else {
+    error.textContent = '❌ Username atau sandi salah!';
+  }
+}
+
+function logout() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+}
+
+/* ============ RENDER DASHBOARD ============ */
+function renderDashboard() {
+  const grid = document.getElementById('orderGrid');
+  grid.innerHTML = '';
+
+  let selesai = 0;
+  let totalKomentar = 0;
+  const terapisSet = new Set();
+
+  dataPesanan.forEach(order => {
+    terapisSet.add(order.terapis);
+    if (order.status === 'selesai') selesai++;
+    totalKomentar += order.komentar.length;
+
+    const komentarHTML = order.komentar.length > 0
+      ? order.komentar.map(k => `
+          <div class="komentar">
+            <strong>${k.user}</strong>
+            <span class="bintang">${'★'.repeat(k.bintang)}${'☆'.repeat(5-k.bintang)}</span>
+            <div>${k.teks}</div>
+          </div>`).join('')
+      : `<div class="komentar" style="color:#aaa;">Belum ada komentar.</div>`;
+
+    grid.innerHTML += `
+      <div class="order-card">
+        <img src="${order.foto}" alt="${order.layanan}">
+        <div class="order-body">
+          <h4>${order.nama}</h4>
+          <span class="layanan">${order.layanan}</span>
+          <p>👩‍⚕️ Terapis: <b>${order.terapis}</b></p>
+          <p>📅 ${order.tanggal} • ⏰ ${order.jam}</p>
+          <p>⏳ Durasi: ${order.durasi}</p>
+          <span class="status ${order.status}">${order.status.toUpperCase()}</span>
+          ${komentarHTML}
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('totalOrder').textContent = dataPesanan.length;
+  document.getElementById('totalTerapis').textContent = terapisSet.size;
+  document.getElementById('totalSelesai').textContent = selesai;
+  document.getElementById('totalKomentar').textContent = totalKomentar;
+}
+
+/* Enter untuk login */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') {
+    login();
+  }
+});
+</script>
+</body>
+</html>
